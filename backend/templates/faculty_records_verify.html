@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Webcam Verification | AttendEase</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='faculty_login.js') }}" defer></script>
+</head>
+<body>
+<header class="topbar">
+    <div class="brand"><h1>AttendEase</h1><p>Protected faculty attendance records</p></div>
+    <a class="btn-primary" href="{{ url_for('faculty_dashboard') }}">Faculty dashboard</a>
+</header>
+<main class="page-container">
+    <section class="section-card" style="max-width:760px;margin:auto">
+        <h2>Verify your faculty face to open records</h2>
+        <p>Signed in as <strong>{{ faculty_name }}</strong>. The camera must match the active registered face for this same faculty account.</p>
+        <p>No student attendance records are shown until verification succeeds. Only your assigned classes will be visible.</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}<p class="alert alert-{{ category }}" role="status">{{ message }}</p>{% endfor %}
+        {% endwith %}
+        {% if error %}<p class="alert alert-error" role="alert">{{ error }}</p>{% endif %}
+        <form id="faculty-login-form" method="POST" action="{{ url_for('faculty_records_verify') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="face_image" id="faculty-login-image">
+            <video id="faculty-login-camera" autoplay playsinline muted style="width:100%;max-width:640px;background:#14223a;border-radius:12px"></video>
+            <canvas id="faculty-login-canvas" hidden></canvas>
+            <p id="faculty-login-status" role="status" aria-live="polite">Camera is not running.</p>
+            <div class="camera-actions">
+                <button type="button" id="faculty-login-start">Start Camera</button>
+                <button type="button" id="faculty-login-stop" disabled>Stop Camera</button>
+                <button type="submit" id="faculty-login-submit" disabled>Verify &amp; open records</button>
+            </div>
+        </form>
+        <p>Records access expires after a short verification window (5 minutes by default). Opening this check again or using Lock records closes the previous access grant.</p>
+        <p>Use localhost or HTTPS, allow browser/OS camera permission, and open the app in a separate tab if an embedded preview blocks the webcam.</p>
+        <noscript>Enable JavaScript to capture your webcam image.</noscript>
+    </section>
+</main>
+</body>
+</html>

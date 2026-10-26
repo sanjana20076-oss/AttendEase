@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Records | AttendEase</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% if can_review %}
+    <script src="{{ url_for('static', filename='records_access.js') }}" defer></script>
+    <noscript><meta http-equiv="refresh" content="{{ (records_access_ms / 1000) | int }};url={{ url_for('faculty_records_verify') }}"></noscript>
+    {% endif %}
+    <style>
+        .records-table{width:100%;border-collapse:collapse;text-align:left;min-width:1100px}
+        .records-table th,.records-table td{padding:14px 12px;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+        .records-table th{background:#f1f5f9;color:#24324a}
+        .review-success{color:#16803c;font-weight:600}.review-pending{color:#b7791f}.review-rejected{color:#dc2626}
+        .date-filter{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:20px}
+        .date-filter input,.date-filter button,.date-filter a{padding:10px 14px}
+    </style>
+</head>
+<body>
+<header class="topbar">
+    <div class="brand"><div class="brand-icon">A</div><div><h2>AttendEase</h2><p>Face recognition attendance</p></div></div>
+    <div class="topbar-actions">
+        <span>Welcome, {{ session.get('faculty_name', session.get('admin_username', 'Administrator')) }}</span>
+        <a class="btn-primary" href="{{ url_for(dashboard_endpoint) }}">Dashboard</a>
+    </div>
+</header>
+<main class="page-container" id="protected-attendance-records"
+    {% if can_review %}
+    data-access-status-url="{{ url_for('faculty_records_status') }}"
+    data-verification-url="{{ url_for('faculty_records_verify') }}"
+    data-expires-in-ms="{{ records_access_ms }}"
+    {% endif %}>
+    <section class="page-header">
+        <h1>Attendance Records</h1>
+        <p>Registered student matches are saved as <strong>Present / Successful (automatic)</strong>. Automatic approval is not a manual faculty confirmation.</p>
+        {% if can_review %}
+        <p role="status">Faculty face verified. You can see only your assigned classes. This access locks automatically when its verification window expires.</p>
+        <form method="POST" action="{{ url_for('faculty_records_lock') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-danger">Lock records</button>
+        </form>
+        {% endif %}
+        <form method="GET" action="{{ url_for(records_endpoint) }}" class="date-filter">
+            <label for="date">Filter by session date:</label>
+            <input type="date" id="date" name="date" value="{{ selected_date }}">
+            <button type="submit">Filter</button><a href="{{ url_for(records_endpoint) }}">Clear</a>
+        </form>
+    </section>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}<div class="alert alert-{{ category }}" role="status">{{ message }}</div>{% endfor %}
+    {% endwith %}
+    <section class="section-card">
+        {% if records %}
+        <p>Scroll horizontally for timestamps and review actions on smaller screens.</p>
+        <div style="overflow-x:auto">
+            <table class="records-table">
+                <thead><tr>
+                    <th>Roll number</th><th>Student name</th><th>Attendance</th><th>Review</th>
+                    <th>Subject</th><th>Section</th><th>Date</th><th>Department</th><th>Student ID</th><th>Detected at</th><th>Automatic review at</th>
+                    {% if can_review %}<th>Review action</th>{% endif %}
+                </tr></thead>
+                <tbody>
+                {% for record in records %}
+                    <tr>
+                        <td>{{ record.roll_number }}</td><td>{{ record.full_name }}</td>
+                        <td>{{ record.attendance_status | title }}</td>
+                        <td>
+                            {% if record.review_status == 'auto_approved' %}<span class="review-success">Successful (automatic)</span>
+                            {% elif record.review_status == 'confirmed' %}<span class="review-success">Confirmed by faculty</span>
+                            {% elif record.review_status == 'rejected' %}<span class="review-rejected">Rejected</span>
+                            {% else %}<span class="review-pending">Pending faculty review</span>{% endif %}
+                        </td>
+                        <td>{{ record.subject_name }}</td><td>{{ record.section }}</td><td>{{ record.session_date }}</td>
+                        <td>{{ record.department }}</td><td>{{ record.student_id }}</td>
+                        <td>{{ record.detected_at or '—' }}</td><td>{{ record.auto_reviewed_at or '—' }}</td>
+                        {% if can_review %}
+                        <td>
+                            {% if record.review_status in ('pending', 'auto_approved') %}
+                            <form method="POST" action="{{ url_for('review_attendance', attendance_id=record.attendance_id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                {% if record.review_status == 'pending' %}<button type="submit" name="action" value="confirm">Confirm</button>{% endif %}
+                                <button type="submit" name="action" value="reject">Reject</button>
+                            </form>
+                            {% else %}Reviewed{% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}<p>No attendance records found for the selected date.</p>{% endif %}
+    </section>
+    <footer class="page-footer">AttendEase · Face Recognition Attendance Management System</footer>
+</main>
+</body>
+</html>

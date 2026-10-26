@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | AttendEase</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">A</div>
+            <div>
+                <h2>AttendEase</h2>
+                <p>Face Recognition Attendance System</p>
+            </div>
+        </div>
+
+        <div class="topbar-actions">
+            <span class="welcome-text">
+                Welcome, {{ session['admin_username'] }}
+            </span>
+
+            <form action="{{ url_for('logout') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-danger">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <main class="page-container">
+
+        <!-- Dashboard heading -->
+        <section class="page-header">
+            <h1>Dashboard Overview</h1>
+            <p class="subtitle">
+                Manage students, faculty, class assignments, and attendance.
+            </p>
+        </section>
+
+        <!-- Dashboard statistics -->
+        <section class="stat-grid">
+
+            <article class="stat-card">
+                <h3>Total Active Students</h3>
+                <p class="stat-number">{{ total_students }}</p>
+                <p class="subtitle">Currently registered students</p>
+            </article>
+
+            <article class="stat-card">
+                <h3>Faculty Management</h3>
+                <p class="stat-number">—</p>
+                <p class="subtitle">Manage faculty registration and access</p>
+            </article>
+
+            <article class="stat-card">
+                <h3>Face Recognition</h3>
+                <p class="stat-number">—</p>
+                <p class="subtitle">Recognition system status</p>
+            </article>
+
+        </section>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="status">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <!-- Quick Actions -->
+        <section class="section-card">
+            <h2>Quick Actions</h2>
+            <p class="subtitle">
+                Choose an action to manage your attendance system.
+            </p>
+
+            <div class="action-grid">
+
+                <!-- Student Management -->
+                <a class="action-link"
+                   href="{{ url_for('students') }}">
+                    <h3>Student Management</h3>
+                    <p>
+                        View, search, edit, deactivate, and reactivate students.
+                    </p>
+                </a>
+
+                <!-- Student registration -->
+                <a class="action-link"
+                   href="{{ url_for('add_student') }}">
+                    <h3>+ Register New Student</h3>
+                    <p>
+                        Add a student's details and register their face.
+                    </p>
+                </a>
+
+                <!-- Faculty Management -->
+                <a class="action-link"
+                   href="{{ url_for('add_faculty') }}">
+                    <h3>Faculty Management</h3>
+                    <p>
+                        Register faculty members and capture their faces.
+                    </p>
+                </a>
+
+                <!-- Weekly Timetable -->
+                <a class="action-link"
+                   href="{{ url_for('add_weekly_timetable') }}">
+                    <h3>Manage Weekly Timetable</h3>
+                    <p>
+                        Set recurring subjects, weekdays, period timings,
+                        sections, and faculty assignments.
+                    </p>
+                </a>
+
+                <!-- Assign Class Session -->
+                <a class="action-link"
+                   href="{{ url_for('add_class_session') }}">
+                    <h3>Assign Class Session</h3>
+                    <p>
+                        Assign a subject, section, date, and time to a faculty member.
+                    </p>
+                </a>
+
+                <!-- Attendance records -->
+                <a class="action-link"
+                   href="{{ url_for('attendance_records') }}">
+                    <h3>Attendance Records</h3>
+                    <p>
+                        View student attendance, dates, and review statuses.
+                    </p>
+                </a>
+
+                <!-- Attendance summary -->
+                <a class="action-link"
+                   href="{{ url_for('attendance_summary') }}">
+                    <h3>Attendance Summary</h3>
+                    <p>
+                        View total records, present records, and review counts.
+                    </p>
+                </a>
+
+                <!-- Student face recognition -->
+                <div class="action-link">
+                    <h3>Face Recognition</h3>
+                    <p>
+                        Choose a class below to open its automatic attendance camera.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        
+        <section class="section-card" id="today-classes" style="overflow-x:auto">
+            <h2>Today's classes and attendance cameras</h2>
+            <p>{{ today }} · {{ timezone }}. Start a selected class during its scheduled time, then allow camera access.</p>
+            {% if class_sessions %}
+            <table>
+                <thead><tr><th>Subject / section</th><th>Faculty</th><th>Time</th><th>Status</th><th>Camera</th></tr></thead>
+                <tbody>
+                {% for item in class_sessions %}
+                    <tr>
+                        <td>{{ item.subject_name }} / {{ item.section }}</td>
+                        <td>{{ item.faculty_name }}</td>
+                        <td>{{ item.start_time }}–{{ item.end_time }}</td><td>{{ item.session_status }}</td>
+                        <td>
+                        {% if item.session_status == 'scheduled' and item.within_window %}
+                            <form action="{{ url_for('start_class_session', session_id=item.session_id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit">Start class &amp; open camera</button>
+                            </form>
+                        {% elif item.session_status == 'in_progress' %}
+                            {% if item.within_window %}
+                            <a href="{{ url_for('admin_attendance_camera', session_id=item.session_id) }}">Open attendance camera</a>
+                            {% else %}<span>Outside scheduled time</span>{% endif %}
+                            <form action="{{ url_for('finish_class_session', session_id=item.session_id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit">Finish class</button>
+                            </form>
+                        {% else %}<span>Not available now</span>{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}<p>No classes assigned today. Add a dated class session or a weekly timetable first.</p>{% endif %}
+        </section>
+
+        <!-- Footer -->
+        <footer class="page-footer">
+            AttendEase · Face Recognition Attendance Management System
+        </footer>
+
+    </main>
+
+</body>
+</html>

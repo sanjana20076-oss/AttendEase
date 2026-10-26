@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Student | AttendEase</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">A</div>
+            <div>
+                <h2>AttendEase</h2>
+                <p>Face Recognition Attendance System</p>
+            </div>
+        </div>
+
+        <div class="topbar-actions">
+            <a class="btn btn-secondary"
+               href="{{ url_for('dashboard') }}">
+                Back to Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main class="page-container">
+        <section class="page-header">
+            <h1>Register New Student</h1>
+            <p class="subtitle">
+                Enter student details and capture their face using the webcam.
+            </p>
+        </section>
+
+        <section class="form-card">
+            <div class="section-card"
+                 style="box-shadow:none; margin-bottom:24px;">
+                <h2>Student Information</h2>
+                <p class="subtitle">
+                    Fields marked with <span class="required">*</span>
+                    are required.
+                </p>
+            </div>
+
+            <form action="{{ url_for('add_student') }}"
+                  method="POST"
+                  id="studentForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="roll_number">
+                            Roll Number <span class="required">*</span>
+                        </label>
+                        <input type="text" id="roll_number"
+                               name="roll_number"
+                               placeholder="e.g. 2026CSE001"
+                               maxlength="50" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="full_name">
+                            Full Name <span class="required">*</span>
+                        </label>
+                        <input type="text" id="full_name"
+                               name="full_name"
+                               placeholder="Enter student's full name"
+                               maxlength="100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department">
+                            Department <span class="required">*</span>
+                        </label>
+                        <input type="text" id="department"
+                               name="department"
+                               placeholder="e.g. CSE" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="section">
+                            Section <span class="required">*</span>
+                        </label>
+                        <input type="text" id="section"
+                               name="section"
+                               placeholder="e.g. A" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email"
+                               name="email"
+                               placeholder="student@example.com">
+                        <p class="field-help">
+                            Optional. If provided, the email must be unique.
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="form-group">
+                    <h2>Face Registration</h2>
+                    <p class="subtitle">
+                        Allow camera access, position one face in the frame,
+                        and capture the image.
+                    </p>
+
+                    <video id="faceVideo"
+                           autoplay
+                           playsinline
+                           muted
+                           style="display:block; width:100%; max-width:480px;
+                                  background:#111; border-radius:12px;">
+                    </video>
+
+                    <canvas id="faceCanvas" style="display:none;"></canvas>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn"
+                                id="startCameraBtn">
+                            Start Webcam
+                        </button>
+
+                        <button type="button" class="btn"
+                                id="captureFaceBtn" disabled>
+                            Capture Face
+                        </button>
+
+                        <button type="button" class="btn btn-secondary"
+                                id="stopCameraBtn" disabled>
+                            Stop Webcam
+                        </button>
+                    </div>
+
+                    <p id="cameraStatus" role="status" aria-live="polite">
+                        Webcam not started.
+                    </p>
+
+                    <img id="capturedFace"
+                         alt="Captured student face preview"
+                         style="display:none; width:100%; max-width:240px;
+                                border-radius:12px; margin-top:12px;">
+
+                    <input type="hidden" id="face_image"
+                           name="face_image">
+
+                    <p class="field-help">
+                        Capture a clear image containing exactly one face.
+                    </p>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn" id="registerBtn">
+                        Register Student
+                    </button>
+
+                    <a href="{{ url_for('dashboard') }}"
+                       class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </section>
+
+        <footer class="page-footer">
+            AttendEase · Student Management
+        </footer>
+    </main>
+
+    <script src="{{ url_for('static', filename='registration_camera.js') }}"></script>
+</body>
+</html>

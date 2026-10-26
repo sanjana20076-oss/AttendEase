@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Face Login | AttendEase</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <h1>Faculty Face Login</h1>
+        <p>Use your registered face to access assigned attendance records.</p>
+
+        {% if error %}<p role="alert" class="alert alert-error">{{ error }}</p>{% endif %}
+        <p>Use localhost or HTTPS. If this page is embedded, open it in a separate browser tab for camera permissions.</p>
+        <form id="faculty-login-form" method="POST"
+              action="{{ url_for('faculty_face_login') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div>
+                <video id="faculty-login-camera"
+                       autoplay playsinline muted
+                       width="400"></video>
+            </div>
+
+            <canvas id="faculty-login-canvas" hidden></canvas>
+
+            <input type="hidden" name="face_image" id="faculty-login-image">
+
+            <p id="faculty-login-status">Camera is not running.</p>
+
+            <button type="button" id="faculty-login-start">Start Camera</button>
+            <button type="button" id="faculty-login-stop" disabled>Stop Camera</button>
+            <button type="submit" id="faculty-login-submit" disabled>
+                Login with Face
+            </button>
+        </form>
+
+        <p><a href="{{ url_for('login') }}">Admin login</a></p>
+    </main>
+
+    <script src="{{ url_for('static', filename='faculty_login.js') }}"></script>
+</body>
+</html>

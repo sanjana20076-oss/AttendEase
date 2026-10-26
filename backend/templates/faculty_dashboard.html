@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard | AttendEase</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<main class="page-container">
+    <h1>AttendEase · Faculty Dashboard</h1>
+    <p>Welcome, {{ faculty_name }}.</p>
+    <h2>Today's assigned classes</h2>
+    <p>{{ today }} · {{ timezone }}. Weekly timetable entries are created as dated sessions automatically when this dashboard is opened.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="status">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+    <section class="section-card" style="overflow-x:auto">
+    {% if classes %}
+        <table>
+            <thead><tr><th>Subject</th><th>Section</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for item in classes %}
+                <tr>
+                    <td>{{ item.subject_name }}</td><td>{{ item.section }}</td>
+                    <td>{{ item.start_time }}–{{ item.end_time }}</td><td>{{ item.session_status }}</td>
+                    <td>
+                        {% if item.session_status == 'scheduled' and item.within_window %}
+                            <form action="{{ url_for('start_class_session', session_id=item.session_id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit">Start class &amp; open camera</button>
+                            </form>
+                        {% elif item.session_status == 'in_progress' %}
+                            {% if item.within_window %}
+                                <a class="btn-primary" href="{{ url_for('faculty_attendance_camera', session_id=item.session_id) }}">Resume attendance camera</a>
+                            {% else %}
+                                <span>Outside scheduled time</span>
+                            {% endif %}
+                            <form action="{{ url_for('finish_class_session', session_id=item.session_id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn-danger">Finish class</button>
+                            </form>
+                        {% elif item.session_status == 'scheduled' %}
+                            <span>Available only during the scheduled time</span>
+                        {% else %}
+                            <span>Closed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No classes assigned today. Ask the administrator to add a weekly timetable or a dated class session.</p>
+    {% endif %}
+    </section>
+    <p><a href="{{ url_for('faculty_records_verify') }}">Verify face & view attendance records</a></p>
+    <form action="{{ url_for('logout') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">Logout</button></form>
+</main>
+</body>
+</html>

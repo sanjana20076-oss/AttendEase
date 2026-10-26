@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Summary | AttendEase</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .summary-card h3 {
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 14px;
+        }
+
+        .summary-number {
+            font-size: 34px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .summary-note {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .summary-actions {
+            margin-top: 28px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">A</div>
+            <div>
+                <h2>AttendEase</h2>
+                <p>Face Recognition Attendance System</p>
+            </div>
+        </div>
+
+        <div class="topbar-actions">
+            <span class="welcome-text">
+                Welcome, {{ session['admin_username'] }}
+            </span>
+
+            <a class="btn-primary" href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main class="page-container">
+
+        <section class="page-header">
+            <h1>Attendance Summary</h1>
+            <p class="subtitle">
+                Overview of recorded attendance and faculty review progress.
+            </p>
+        </section>
+
+        <section class="summary-grid">
+
+            <article class="summary-card">
+                <h3>Total Attendance Records</h3>
+                <div class="summary-number">
+                    {{ summary['total_records'] }}
+                </div>
+                <p class="summary-note">
+                    All saved attendance entries
+                </p>
+            </article>
+
+            <article class="summary-card">
+                <h3>Present Records</h3>
+                <div class="summary-number">
+                    {{ summary['present_records'] }}
+                </div>
+                <p class="summary-note">
+                    Entries marked present, including pending/rejected review states
+                </p>
+            </article>
+
+            <article class="summary-card">
+                <h3>Automatically Approved</h3>
+                <div class="summary-number">{{ summary['automatic_records'] }}</div>
+                <p class="summary-note">Present entries with successful automatic review</p>
+            </article>
+            <article class="summary-card">
+                <h3>Successful Reviews</h3>
+                <div class="summary-number">{{ summary['successful_reviews'] }}</div>
+                <p class="summary-note">Automatic approvals plus manual faculty confirmations</p>
+            </article>
+
+            <article class="summary-card">
+                <h3>Pending Reviews</h3>
+                <div class="summary-number">
+                    {{ summary['pending_reviews'] }}
+                </div>
+                <p class="summary-note">
+                    Waiting for faculty review
+                </p>
+            </article>
+
+            <article class="summary-card">
+                <h3>Confirmed Records</h3>
+                <div class="summary-number">
+                    {{ summary['confirmed_records'] }}
+                </div>
+                <p class="summary-note">
+                    Confirmed by the reviewer
+                </p>
+            </article>
+
+            <article class="summary-card">
+                <h3>Rejected Records</h3>
+                <div class="summary-number">
+                    {{ summary['rejected_records'] }}
+                </div>
+                <p class="summary-note">
+                    Rejected during review
+                </p>
+            </article>
+
+            <article class="summary-card">
+                <h3>Recorded Present Share</h3>
+                <div class="summary-number">
+                    {% if summary['attendance_percentage'] is not none %}
+                        {{ summary['attendance_percentage'] }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+                <p class="summary-note">
+                    Present entries / saved entries. Not a student attendance percentage: missing students do not yet have absence records.
+                </p>
+            </article>
+
+        </section>
+
+        <section class="summary-actions">
+            <a class="btn-primary"
+               href="{{ url_for('attendance_records') }}">
+                View Attendance Records
+            </a>
+        </section>
+
+        <footer class="page-footer">
+            AttendEase · Face Recognition Attendance Management System
+        </footer>
+
+    </main>
+
+</body>
+</html>

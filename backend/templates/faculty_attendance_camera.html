@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance Camera | AttendEase</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='camera.js') }}" defer></script>
+</head>
+<body>
+<header class="topbar">
+    <div class="brand"><h1>AttendEase</h1><p>Student face recognition attendance</p></div>
+    <a class="btn-primary" href="{{ url_for(dashboard_endpoint) }}">Dashboard</a>
+</header>
+<main class="page-container">
+    <section class="section-card">
+        <h2>Class attendance camera</h2>
+        <p>Subject: {{ class_session.subject_name }} · Section: {{ class_session.section }}</p>
+        <p>Session {{ class_session.session_id }} · {{ class_session.session_date }} · {{ class_session.start_time }}–{{ class_session.end_time }} ({{ timezone }})</p>
+        <p>Click Start Attendance once and allow camera access. Show one registered face at a time; attendance is recorded automatically, once per student per class.</p>
+        <div class="camera-container">
+            <video id="attendance-camera" autoplay playsinline muted
+                style="width:100%;max-width:640px;background:#101827;border-radius:8px"
+                data-session-id="{{ class_session.session_id }}"
+                data-session-url="{{ url_for('active_class_session') }}"
+                data-recognize-url="{{ url_for('recognize_face') }}"
+                data-csrf-token="{{ csrf_token() }}"></video>
+            <p id="camera-status" role="status" aria-live="polite">Camera is not running.</p>
+        </div>
+        <div class="camera-actions">
+            <button type="button" id="start-attendance" class="btn-primary">Start Attendance</button>
+            <button type="button" id="stop-attendance" class="btn-danger" disabled>Stop Camera</button>
+        </div>
+        <p id="recognition-status" role="status" aria-live="polite">Click Start Attendance to begin.</p>
+        <p id="attendance-message" role="status" aria-live="polite"></p>
+        <p id="review-status" role="status" aria-live="polite"></p>
+        <p id="javascript-status" role="status">Loading attendance controls...</p>
+        <noscript>Enable JavaScript to use the camera.</noscript>
+        <p>{% if config.AUTO_APPROVE_ATTENDANCE %}Successful student matches are marked Present and reviewed successfully by automatic approval.{% else %}Automatic approval is disabled; new matches are Present/Pending.{% endif %} Stopping the camera does not finish the class.</p>
+        <p><a href="{{ url_for('faculty_records_verify') if dashboard_endpoint == 'faculty_dashboard' else url_for('attendance_records') }}">View attendance records{% if dashboard_endpoint == 'faculty_dashboard' %} — webcam verification required{% endif %}</a></p>
+        <form action="{{ url_for('finish_class_session', session_id=class_session.session_id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-danger">Finish class</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

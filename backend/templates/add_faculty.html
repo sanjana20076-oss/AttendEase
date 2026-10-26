@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Faculty | AttendEase</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <main class="page-container">
+
+        <section class="page-header">
+            <h1>Register Faculty</h1>
+            <p class="subtitle">
+                Enter faculty details and capture a face image
+                for future identity verification.
+            </p>
+        </section>
+
+        <section class="section-card">
+
+            <form action="{{ url_for('add_faculty') }}"
+                  method="POST"
+                  id="faculty-registration-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label for="employee_id">Employee ID *</label>
+                    <input
+                        type="text"
+                        id="employee_id"
+                        name="employee_id"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="full_name">Full Name *</label>
+                    <input
+                        type="text"
+                        id="full_name"
+                        name="full_name"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                    >
+                </div>
+
+                <hr>
+
+                <h2>Faculty Face Registration</h2>
+                <p class="subtitle">
+                    Allow camera access, position one face clearly
+                    in the frame, and capture the image.
+                </p>
+
+                <div class="camera-container">
+                    <video
+                        id="faculty-camera"
+                        autoplay
+                        playsinline
+                        muted
+                    ></video>
+
+                    <canvas
+                        id="faculty-canvas"
+                        hidden
+                    ></canvas>
+
+                    <p id="faculty-camera-status" role="status">
+                        Camera is not running.
+                    </p>
+                </div>
+
+                <div class="camera-actions">
+                    <button
+                        type="button"
+                        id="start-faculty-camera"
+                        class="btn-primary"
+                    >
+                        Start Camera
+                    </button>
+
+                    <button
+                        type="button"
+                        id="capture-faculty-face"
+                        class="btn-primary"
+                        disabled
+                    >
+                        Capture Face
+                    </button>
+
+                    <button
+                        type="button"
+                        id="retake-faculty-face"
+                        class="btn-danger"
+                        hidden
+                    >
+                        Retake
+                    </button>
+                    <button type="button" id="stop-faculty-camera">Stop Camera</button>
+                </div>
+
+                <div id="faculty-preview-container" hidden>
+                    <h3>Captured Face</h3>
+                    <img
+                        id="faculty-face-preview"
+                        alt="Captured faculty face preview"
+                        style="max-width: 100%; height: auto;"
+                    >
+                </div>
+
+                <input
+                    type="hidden"
+                    name="face_image"
+                    id="faculty-face-image"
+                    value=""
+                >
+
+                <div class="camera-actions">
+                    <button
+                        type="submit"
+                        id="register-faculty"
+                        class="btn-primary"
+                    >
+                        Register Faculty
+                    </button>
+
+                    <a href="{{ url_for('dashboard') }}"
+                       class="btn-danger">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+
+        </section>
+
+        <footer class="page-footer">
+            AttendEase · Faculty Registration
+        </footer>
+
+    </main>
+
+    
+    <script src="{{ url_for('static', filename='faculty_registration_camera.js') }}"></script>
+
+</body>
+</html>

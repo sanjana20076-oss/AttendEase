@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | AttendEase</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="login-page">
+
+    <main class="login-card">
+
+        <div class="login-heading">
+            <div class="brand-icon" style="margin: 0 auto 18px;">
+                A
+            </div>
+
+            <h1>AttendEase</h1>
+            <p>Admin Login Portal</p>
+        </div>
+
+        <form action="{{ url_for('login') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    autocomplete="username"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-block">
+                Login to Dashboard
+            </button>
+
+        </form>
+
+        <p><a href="{{ url_for('faculty_face_login') }}">Faculty face login</a></p>
+        <p>Students do not log in here. A faculty member starts a class and scans student faces for attendance.</p>
+
+        <footer class="page-footer">
+            Face Recognition Attendance Management System
+        </footer>
+
+    </main>
+
+</body>
+</html>

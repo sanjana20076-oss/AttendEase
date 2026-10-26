@@ -1,0 +1,6 @@
+# Web application + image decoding, without the optional heavyweight model.
+Flask>=3.1,<4
+python-dotenv>=1.0,<2
+numpy>=1.26,<3
+opencv-python-headless>=4.9,<4.12
+tzdata>=2024.1

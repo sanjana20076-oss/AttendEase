@@ -1,0 +1,8 @@
+# Recommended: a fresh Python 3.10 or 3.11 virtual environment.
+-r requirements-core.txt
+# Conservative ABI constraint for the legacy InsightFace extension.
+numpy>=1.26,<2
+insightface==0.7.3
+onnxruntime>=1.17,<2
+# InsightFace 0.7.3's source distribution imports Cython during installation.
+Cython>=3.0,<4

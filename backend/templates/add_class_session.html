@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Class Session | AttendEase</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <h1>Assign Class Session</h1>
+        <p>Assign a subject, section, date, and time to a faculty member.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        {% if faculty_list %}
+        <form method="POST" action="{{ url_for('add_class_session') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="subject_name">Subject Name *</label>
+            <input type="text" id="subject_name" name="subject_name"
+                   required>
+
+            <label for="section">Section *</label>
+            <input type="text" id="section" name="section" required>
+
+            <label for="session_date">Class Date *</label>
+            <input type="date" id="session_date" name="session_date"
+                   required>
+
+            <label for="start_time">Start Time *</label>
+            <input type="time" id="start_time" name="start_time"
+                   required>
+
+            <label for="end_time">End Time *</label>
+            <input type="time" id="end_time" name="end_time"
+                   required>
+
+            <label for="faculty_id">Assign Faculty *</label>
+            <select id="faculty_id" name="faculty_id" required>
+                <option value="">Choose faculty</option>
+                {% for faculty in faculty_list %}
+                    <option value="{{ faculty['faculty_id'] }}">
+                        {{ faculty['employee_id'] }} — {{ faculty['full_name'] }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Assign Class Session</button>
+        </form>
+        {% else %}
+            <p>No active faculty members found. Register a faculty member first.</p>
+        {% endif %}
+
+        <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+    </main>
+</body>
+</html>

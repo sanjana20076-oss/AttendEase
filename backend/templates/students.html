@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management | AttendEase</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .student-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            width: 290px;
+            max-width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+            color: #1e293b;
+        }
+
+        .search-input:focus {
+            outline: 2px solid #315efb;
+            outline-offset: 2px;
+        }
+
+        .search-button {
+            border: none;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .clear-link {
+            color: #315efb;
+            text-decoration: none;
+            padding: 10px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        .students-table th,
+        .students-table td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .students-table th {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .students-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-active {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .status-inactive {
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        .empty-message {
+            padding: 24px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .result-message {
+            margin-top: 18px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-buttons form {
+            margin: 0;
+        }
+
+        .action-button {
+            display: inline-block;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .deactivate-button {
+            background: #dc2626;
+        }
+
+        .reactivate-button {
+            background: #15803d;
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            margin-top: 16px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #334155;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">A</div>
+            <div>
+                <h2>AttendEase</h2>
+                <p>Face Recognition Attendance System</p>
+            </div>
+        </div>
+
+        <div class="topbar-actions">
+            <span class="welcome-text">
+                Welcome, {{ session['admin_username'] }}
+            </span>
+
+            <a class="btn-primary"
+               href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main class="page-container">
+
+        <section class="page-header">
+            <h1>Student Management</h1>
+            <p class="subtitle">
+                View, search, edit, and manage registered students.
+            </p>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash-message" role="status">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <div class="student-actions">
+
+            <a class="btn-primary"
+               href="{{ url_for('add_student') }}">
+                Register New Student
+            </a>
+
+            <form class="search-form"
+                  method="GET"
+                  action="{{ url_for('students') }}">
+
+                <input
+                    class="search-input"
+                    type="search"
+                    name="search"
+                    placeholder="Search by name or roll number"
+                    value="{{ search_query | default('') }}"
+                    aria-label="Search students by name or roll number"
+                >
+
+                <button class="btn-primary search-button"
+                        type="submit">
+                    Search
+                </button>
+
+                {% if search_query | default('') %}
+                    <a class="clear-link"
+                       href="{{ url_for('students') }}">
+                        Clear
+                    </a>
+                {% endif %}
+
+            </form>
+        </div>
+
+        {% if search_query | default('') %}
+            <p class="result-message">
+                Search results for:
+                <strong>{{ search_query }}</strong>
+                — {{ students | length }} student(s) found.
+            </p>
+        {% endif %}
+
+        <section class="table-container">
+
+            {% if students %}
+
+                <table class="students-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Roll Number</th>
+                            <th>Full Name</th>
+                            <th>Department</th>
+                            <th>Section</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for student in students %}
+                            <tr>
+                                <td>{{ student['student_id'] }}</td>
+                                <td>{{ student['roll_number'] }}</td>
+                                <td>{{ student['full_name'] }}</td>
+                                <td>{{ student['department'] }}</td>
+                                <td>{{ student['section'] }}</td>
+                                <td>{{ student['email'] or '-' }}</td>
+
+                                <td>
+                                    {% if student['is_active'] == 1 %}
+                                        <span class="status-active">
+                                            Active
+                                        </span>
+                                    {% else %}
+                                        <span class="status-inactive">
+                                            Inactive
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <a class="btn-primary"
+                                           href="{{ url_for('edit_student', student_id=student['student_id']) }}">
+                                            Edit
+                                        </a>
+
+                                        {% if student['is_active'] == 1 %}
+
+                                            <form method="POST"
+                                                  action="{{ url_for('deactivate_student', student_id=student['student_id']) }}"
+                                                  onsubmit="return confirm('Are you sure you want to deactivate this student?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                                <button
+                                                    type="submit"
+                                                    class="action-button deactivate-button">
+                                                    Deactivate
+                                                </button>
+                                            </form>
+
+                                        {% else %}
+
+                                            <form method="POST"
+                                                  action="{{ url_for('reactivate_student', student_id=student['student_id']) }}"
+                                                  onsubmit="return confirm('Reactivate this student?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                                <button
+                                                    type="submit"
+                                                    class="action-button reactivate-button">
+                                                    Reactivate
+                                                </button>
+                                            </form>
+
+                                        {% endif %}
+
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            {% else %}
+
+                <p class="empty-message">
+                    {% if search_query | default('') %}
+                        No students found matching your search.
+                    {% else %}
+                        No students registered yet.
+                    {% endif %}
+                </p>
+
+            {% endif %}
+
+        </section>
+
+        <footer class="page-footer">
+            AttendEase · Face Recognition Attendance Management System
+        </footer>
+
+    </main>
+
+</body>
+</html>

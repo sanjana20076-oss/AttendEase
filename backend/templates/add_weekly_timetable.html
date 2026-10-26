@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Timetable | AttendEase</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">A</div>
+            <div>
+                <h2>AttendEase</h2>
+                <p>Face Recognition Attendance System</p>
+            </div>
+        </div>
+
+        <div class="topbar-actions">
+            <a class="btn-primary" href="{{ url_for('dashboard') }}">
+                Back to Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main class="page-container">
+
+        <section class="page-header">
+            <h1>Manage Weekly Timetable</h1>
+            <p class="subtitle">
+                Assign recurring subjects, periods, sections, and faculty.
+            </p>
+        </section>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="status">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <!-- Add Weekly Timetable Form -->
+        <section class="section-card">
+            <h2>Add Timetable Entry</h2>
+
+            <form method="POST"
+                  action="{{ url_for('add_weekly_timetable') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <label for="weekday">Weekday</label>
+                <select id="weekday" name="weekday" required>
+                    <option value="">Select weekday</option>
+                    <option value="0">Monday</option>
+                    <option value="1">Tuesday</option>
+                    <option value="2">Wednesday</option>
+                    <option value="3">Thursday</option>
+                    <option value="4">Friday</option>
+                    <option value="5">Saturday</option>
+                    <option value="6">Sunday</option>
+                </select>
+
+                <br><br>
+
+                <label for="subject_name">Subject Name</label>
+                <input type="text"
+                       id="subject_name"
+                       name="subject_name"
+                       required>
+
+                <br><br>
+
+                <label for="section">Section</label>
+                <input type="text"
+                       id="section"
+                       name="section"
+                       required>
+
+                <br><br>
+
+                <label for="start_time">Period Start Time</label>
+                <input type="time"
+                       id="start_time"
+                       name="start_time"
+                       required>
+
+                <br><br>
+
+                <label for="end_time">Period End Time</label>
+                <input type="time"
+                       id="end_time"
+                       name="end_time"
+                       required>
+
+                <br><br>
+
+                <label for="faculty_id">Assign Faculty</label>
+                <select id="faculty_id" name="faculty_id" required>
+                    <option value="">Select faculty</option>
+
+                    {% for faculty in faculty_list %}
+                        <option value="{{ faculty['faculty_id'] }}">
+                            {{ faculty['employee_id'] }} -
+                            {{ faculty['full_name'] }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <br><br>
+
+                <button type="submit" class="btn-primary">
+                    Save Weekly Timetable
+                </button>
+
+            </form>
+        </section>
+
+        <!-- Saved Timetable Records -->
+        <section class="section-card">
+            <h2>Saved Timetable Assignments</h2>
+
+            <p class="subtitle">
+                View the weekday, subject, section, period timings,
+                and assigned faculty member.
+            </p>
+
+            <button
+                type="button"
+                id="toggle-timetable-records"
+                class="btn-primary"
+                aria-expanded="false"
+                aria-controls="timetable-records">
+                View Timetable Records
+            </button>
+
+            <!-- Hidden until the button is clicked -->
+            <div id="timetable-records" hidden>
+
+                {% if timetable_list %}
+
+                    <div class="table-container">
+                        <table class="timetable-table">
+
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Weekday</th>
+                                    <th>Subject</th>
+                                    <th>Section</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Employee ID</th>
+                                    <th>Faculty Name</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% set weekdays = [
+                                    'Monday',
+                                    'Tuesday',
+                                    'Wednesday',
+                                    'Thursday',
+                                    'Friday',
+                                    'Saturday',
+                                    'Sunday'
+                                ] %}
+
+                                {% for item in timetable_list %}
+                                    <tr>
+                                        <td>{{ item['timetable_id'] }}</td>
+                                        <td>{{ weekdays[item['weekday']] }}</td>
+                                        <td class="subject-cell">
+                                            {{ item['subject_name'] }}
+                                        </td>
+                                        <td>{{ item['section'] }}</td>
+                                        <td>{{ item['start_time'] }}</td>
+                                        <td>{{ item['end_time'] }}</td>
+                                        <td>{{ item['employee_id'] }}</td>
+                                        <td class="faculty-cell">
+                                            {{ item['full_name'] }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                {% else %}
+                    <p>No weekly timetable entries have been saved yet.</p>
+                {% endif %}
+
+            </div>
+        </section>
+
+        <footer class="page-footer">
+            AttendEase · Face Recognition Attendance Management System
+        </footer>
+
+    </main>
+
+    <script>
+        const toggleButton = document.getElementById(
+            "toggle-timetable-records"
+        );
+
+        const timetableRecords = document.getElementById(
+            "timetable-records"
+        );
+
+        toggleButton.addEventListener("click", function () {
+            const isHidden = timetableRecords.hidden;
+
+            timetableRecords.hidden = !isHidden;
+
+            toggleButton.setAttribute(
+                "aria-expanded",
+                String(isHidden)
+            );
+
+            toggleButton.textContent = isHidden
+                ? "Hide Timetable Records"
+                : "View Timetable Records";
+        });
+    </script>
+
+</body>
+</html>
