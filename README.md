@@ -1,74 +1,60 @@
-# AttendEase — faculty webcam verification + automatic attendance review
+# AttendEase – Face Recognition Attendance Management System
 
-Updated workspace copy of the Face Recognition Attendance Management System. Original author: **Sanjana**. This version keeps the earlier camera/session fixes and adds the two requested changes. The previous project folder and ZIPs were left unchanged; nothing was pushed to GitHub.
+**AttendEase** is a web-based attendance management system that uses face recognition to help automate student attendance and simplify attendance record management.
 
-## 1. Webcam verification before faculty attendance records
+## Features
 
-```text
-Faculty face login -> dashboard -> Verify face & view attendance records
-    -> webcam must match the active registered face of the SAME faculty account
-    -> only that faculty member's assigned-class records open
-```
+- **Admin Dashboard:** Manage the attendance system through an admin interface.
+- **Student Management:** Register and manage student information.
+- **Face Registration:** Register student and faculty face data.
+- **Face Recognition:** Recognize registered faces using InsightFace.
+- **Automatic Attendance:** Mark recognized students as present and automatically approve successful matches.
+- **Faculty Verification:** Require faculty face verification before accessing attendance records.
+- **Attendance Reports:** View and manage attendance records.
 
-A login alone no longer unlocks the records page. A direct URL, date filter, or review POST cannot bypass the server-side check. Access expires after five minutes by default, can be locked manually, and is invalidated if the faculty face enrollment changes/deactivates or the account becomes inactive. Opening the verification entry page starts a fresh check. The admin records workflow is unchanged.
+## Tech Stack
 
-## 2. Automatic Present and successful review
+- **Language:** Python
+- **Backend:** Flask
+- **Database:** SQLite
+- **Face Recognition:** InsightFace
+- **Image Processing:** OpenCV, NumPy
+- **Frontend:** HTML, CSS, JavaScript
+- **Testing:** pytest
 
-A confident active-student match in the selected active class automatically saves:
+## How It Works
 
-```text
-attendance_status = present
-review_status = auto_approved
-```
+1. The admin logs in and manages students, faculty, and class sessions.
+2. Registered face data is used to recognize students during attendance.
+3. Confident matches can be automatically marked as present.
+4. Faculty members verify their identity using their registered face before accessing assigned-class attendance records.
+5. Attendance records can be reviewed and managed through the application.
 
-The UI shows **Present / Successful (automatic)**. No extra Confirm click is needed for new matches. Automatic approval has its own timestamp and audit event; it does not falsely record a faculty member as having manually reviewed the record. Duplicate scans do not add duplicate attendance or review events. Verified assigned faculty can reject an automatic result; rescanning cannot override that rejection.
+## Installation and Setup
 
-## Start here
+For complete installation instructions, database migration steps, environment configuration, and webcam testing, see [SETUP_AND_TESTING.md](SETUP_AND_TESTING.md).
 
-**[Installation, database upgrade, and real-camera checklist](SETUP_AND_TESTING.md)**  
-**[Feature details and changed files](CHANGES_FACULTY_WEBCAM_REVIEW.md)**  
-**[Verification results and limitations](TEST_RESULTS.md)**
+## Documentation
 
-Recommended full-recognition runtime: a fresh **Python 3.10 or 3.11** virtual environment.
+- [Feature Changes](CHANGES_FACULTY_WEBCAM_REVIEW.md)
+- [Test Results and Limitations](TEST_RESULTS.md)
+- [Setup and Testing Guide](SETUP_AND_TESTING.md)
 
-```bash
-python -m pip install --upgrade pip setuptools wheel
-python -m pip install "numpy>=1.26,<2" "Cython>=3,<4"
-python -m pip install --no-build-isolation -r backend/requirements.txt
-```
+## Testing
 
-Then copy `.env.example` to `.env`, replace the secret with a private random value, and run:
+The project documentation reports **106 passing automated tests**. These tests include faculty verification, automatic attendance approval, audit events, and database migration scenarios.
 
-```bash
-python backend/init_db.py
-python backend/create_admin.py
-python backend/check_setup.py --model
-python backend/app.py
-```
+Real hardware webcam access, full model inference accuracy, and production deployment have not been verified.
 
-Create an admin only for a fresh installation; an existing migrated database preserves its accounts. If updating an earlier installation, stop the old app, use a **copy** of its database in this project, and read the migration instructions before running initialization. The initializer backs up and migrates the previous attendance table without reapproving historical rows.
+## Security and Limitations
 
-Open `http://127.0.0.1:5000/login` for admin or `/faculty/login` for faculty. Use localhost or HTTPS and grant browser/OS webcam permission. Register faculty/student faces and assign a class inside the current campus-local time range before scanning.
+- Face verification is not the same as liveness detection or complete protection against spoofing.
+- Recognition accuracy depends on the model, camera conditions, and validated thresholds.
+- Use synthetic or authorized data when testing.
+- Do not commit passwords, secret keys, private databases, or biometric images to GitHub.
 
-## Configuration
+## Author
 
-```dotenv
-AUTO_APPROVE_ATTENDANCE=1
-FACULTY_RECORDS_VERIFICATION_TTL=300
-APP_TIMEZONE=Asia/Kolkata
-```
+**Sanjana**
 
-Set `AUTO_APPROVE_ATTENDANCE=0` to retain the earlier Present/Pending workflow. Records access still requires the webcam gate. Verification TTL is constrained to 30–900 seconds. Keep a stable private `SECRET_KEY`; use secure cookies only when serving HTTPS.
-
-## Tests
-
-```bash
-python -m pip install -r backend/requirements-dev.txt
-pytest -q
-```
-
-**106 tests passed**, covering the earlier workflow plus faculty step-up verification, expiry, account/enrollment binding, automatic approval/audit, manual rejection, and safe database migration/rollback. Chromium checks also verified the new flow with a simulated camera and synthetic inference.
-
-**Real hardware camera access, full InsightFace/ONNX installation, real model inference/accuracy, and production deployment were not verified here.** No real credentials, enrolled database, model weights, or biometric photos are included. Tests use temporary synthetic data; the running application has no fake-recognition fallback.
-
-This remains an educational project. A fresh face check is not liveness detection or a second authentication factor. Before real-world use, add anti-spoofing, rate limits, audit/access policies, privacy controls, validated recognition thresholds, and a secure production deployment. Student scanning is one face at a time; automatic absence generation and a student self-service login are not implemented.
+*Educational project exploring backend development, database management, computer vision, and applied AI.*
